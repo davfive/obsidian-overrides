@@ -1,0 +1,61 @@
+:root {
+   --my-bgcolor: hsl(360, 100%, 40%);
+   --my-color: hsl(0, 0%, 90%);
+}
+
+.titlebar,
+.workspace-ribbon,
+.workspace-ribbon .sidebar-toggle-button {
+   background: var(--my-bgcolor) !important;
+}
+
+.titlebar-text,
+.workspace-ribbon .clickable-icon {
+   color: var(--my-color) !important;
+}
+
+ul.contains-task-list {
+   padding-inline-start: 0px !important;
+}
+
+.task-extras {
+   display: block;
+   padding-left: 1.5em;
+   font-size: 1em;
+   opacity: 0.6;
+   filter: grayscale(60%);
+}
+
+/* Used with customJS and my scripts/backlinks.js. Removes the targeted section title. */
+.pagebacklink:not([data-embed]) {
+   margin-top: 0.5em !important;
+   margin-bottom: 0.5em !important;
+   padding-top: 0.5em !important;
+   border-top: var(--embed-border-left);
+}
+
+.pagebacklink[data-embed] {
+   margin-top: 0 !important;
+   margin-bottom: 0 !important;
+}
+
+.pagebacklink[data-embed] .internal-embed.markdown-embed.inline-embed {
+   /* .markdown-embed.inline-embed needed for specificity of margin-left */
+   border-left: 0;
+   padding-left: 0 !important;
+   margin-left: 0 !important;
+}
+
+.pagebacklink[data-embed] .markdown-preview-view > ul {
+   padding-inline-start: 1.5em !important;
+}
+
+.pagebacklink[data-embed] .markdown-preview-view [data-heading]:first-child {
+   display: none;
+}
+
+/* Remove the top-and-bottom padding from embedded view */
+.pagebacklink[data-embed] .internal-embed .markdown-preview-view :last-child {
+   margin-block-start: 0 !important;
+   margin-block-end: 0 !important;
+}
