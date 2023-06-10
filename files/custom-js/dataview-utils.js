@@ -63,7 +63,7 @@ class dvutils {
           ? "Error: Failed to render section embed view."
           : display_name(page)
       ),
-      { cls: "pagebacklink", attr }
+      { cls: "dvutils-sectionlink-rendered", attr }
     );
   }
 

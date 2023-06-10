@@ -9,10 +9,7 @@
    color: var(--my-color) !important;
 }
 
-ul.contains-task-list {
-   padding-inline-start: 0px !important;
-}
-
+/* Make the rendered tasks codeblocks look different */
 .task-extras {
    display: block;
    padding-left: 1.5em;
@@ -21,57 +18,36 @@ ul.contains-task-list {
    filter: grayscale(60%);
 }
 
-/* Used with customJS and my scripts/backlinks.js. Removes the targeted section title. */
-.pagebacklink:not([data-embed]) {
+/* Used with customJS and my scripts/dataview-utils.js. Removes the targeted section title. */
+.dvutils-sectionlink-rendered:not([data-embed]) {
    margin-top: 0.5em !important;
    margin-bottom: 0.5em !important;
    padding-top: 0.5em !important;
    border-top: var(--embed-border-left);
 }
 
-.pagebacklink[data-embed] {
+.dvutils-sectionlink-rendered[data-embed] {
    margin-top: 0 !important;
    margin-bottom: 0 !important;
 }
 
-.pagebacklink[data-embed] .internal-embed.markdown-embed.inline-embed {
+.dvutils-sectionlink-rendered[data-embed] .internal-embed.markdown-embed.inline-embed {
    /* .markdown-embed.inline-embed needed for specificity of margin-left */
    border-left: 0;
    padding-left: 0 !important;
    margin-left: 0 !important;
 }
 
-.pagebacklink[data-embed] .markdown-preview-view > ul {
+.dvutils-sectionlink-rendered[data-embed] .markdown-preview-view > ul {
    padding-inline-start: 1.5em !important;
 }
 
-.pagebacklink[data-embed] .markdown-preview-view [data-heading]:first-child {
+.dvutils-sectionlink-rendered[data-embed] .markdown-preview-view [data-heading]:first-child {
    display: none;
 }
 
 /* Remove the top-and-bottom padding from embedded view */
-.pagebacklink[data-embed] .internal-embed .markdown-preview-view :last-child {
+.dvutils-sectionlink-rendered[data-embed] .internal-embed .markdown-preview-view :last-child {
    margin-block-start: 0 !important;
    margin-block-end: 0 !important;
-}
-
-/* FIX: Mixed bullet/task lists don't render properly in Read View of ![EmbedPage] situations
-   This doesn't totally fix it - the ul/li tree is malformed and there aren't enough classes 
-   on it to easily resolve all of the issues. This gets us most of the way though 
-   It really needs to be fixed in the Obsidian core markdown renderer
-*/
-
-li > ul.contains-task-list {
-   /* Mixed bullet/task lists are not properly indented - reverts to stock obsidian css */
-   padding-inline-start: var(--list-indent) !important;
-}
-
-.has-bullet-list ul.contains-task-list li.task-list-item:not(.dataview) {
-   /* Mixed bullet/task lists are not properly indented - reverts to stock obsidian css */
-   margin-inline-start: 0px !important;
-}
-
-:not(.has-bullet-list) ul.contains-task-list li.task-list-item:not(.dataview) {
-   /* Mixed bullet/task lists are not properly indented - reverts to stock obsidian css */
-   margin-inline-start: calc(-1 * var(--list-indent)) !important;
 }
