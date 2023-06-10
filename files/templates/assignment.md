@@ -1,14 +1,16 @@
-#isa/ #status/active
-
+> assignment isa/ status/active
+> [due::]
+---
 # Abstract
 
----
-# Tasks
-* 
 
 ---
-# Journal
-* 
+# Milestones
+- 
+
+---
+# Activity
+-  
 
 ---
 # Notes
