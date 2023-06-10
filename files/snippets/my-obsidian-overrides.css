@@ -59,3 +59,9 @@ ul.contains-task-list {
    margin-block-start: 0 !important;
    margin-block-end: 0 !important;
 }
+
+.callout[data-callout="tip-inline"] {
+   --callout-color: var(--callout-tip);
+   --callout-icon: lucide-flame;
+   display: flex;
+}
