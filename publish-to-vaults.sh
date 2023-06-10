@@ -7,19 +7,14 @@ if [ -z ${local_customjs_dir+x} ]; then
 fi
 
 for vault in $(find ../d5.*/.obsidian -type d -maxdepth 0 | xargs dirname); do
-    echo "Publishing to vault: "$vault
+    echo; echo "Publishing overrides to to vault: "$vault; echo
+
+    for subdir in $vault_customjs_dir $vault_snippets_dir $vault_shared_templates_dir; do
+        mkdir -p $vault/$subdir
+    done
     (set -x;
-        echo "Copying customjs to "$vault/$vault_customjs_dir;
-        mkdir -p $vault/$vault_customjs_dir
-        cp -R $local_customjs_dir/* $vault/$vault_customjs_dir;
-
-        echo "Copying snippets to "$vault/$vault_snippets_dir;
-        mkdir -p $vault/$vault_snippets_dir
-        cp -R $local_snippets_dir/* $vault/$vault_snippets_dir;
-
-        echo "Copying shared tempates to "$vault/$vault_shared_templates_dir;
-        mkdir -p $vault/$vault_shared_templates_dir
-        cp -R $local_shared_templated_dir/* $vault/$vault_shared_templates_dir;
+        rsync -ac $local_customjs_dir/* $vault/$vault_customjs_dir;
+        rsync -ac $local_shared_templated_dir/* $vault/$vault_shared_templates_dir;
+        rsync -ac  --exclude 'my-obsidian-colors.css' $local_snippets_dir/* $vault/$vault_snippets_dir;
     )
-    echo
 done

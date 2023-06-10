@@ -1,8 +1,3 @@
-:root {
-   --my-bgcolor: hsl(360, 100%, 40%);
-   --my-color: hsl(0, 0%, 90%);
-}
-
 .titlebar,
 .workspace-ribbon,
 .workspace-ribbon .sidebar-toggle-button {
