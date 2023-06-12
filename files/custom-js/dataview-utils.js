@@ -3,11 +3,11 @@ class dvutils {
     const status_query = active ? "#status/active" : "-#status/active";
     const nbspan = (d) =>
       dv.el("span", d, { attr: { style: "white-space: nowrap" } });
-
+    debugger;
     dv.table(
       ["Assignment", "Type", "Due", "Tags", "Tasks", "Next Due"],
       dv
-        .pages(`"#assignment AND ${status_query}`)
+        .pages(`#assignment AND ${status_query}`)
         .values.map((p) => [
           p.file.link,
           this._tagsFilter(p.file.etags, ["#isa"]),
