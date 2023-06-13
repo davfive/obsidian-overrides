@@ -3,22 +3,37 @@ class dvutils {
     const status_query = active ? "#status/active" : "-#status/active";
     const nbspan = (d) =>
       dv.el("span", d, { attr: { style: "white-space: nowrap" } });
-    debugger;
-    dv.table(
-      ["Assignment", "Type", "Due", "Tags", "Tasks", "Next Due"],
-      dv
-        .pages(`#assignment AND ${status_query}`)
-        .values.map((p) => [
-          p.file.link,
-          this._tagsFilter(p.file.etags, ["#isa"]),
-          nbspan(p.due),
-          this._tagsFilter(p.file.etags, ["#isa", "#status"], false, false),
-          p.file.tasks.filter((t) => !t.completed).length,
-          nbspan(this.nextTaskDate(p)),
-        ])
-        .sort((fields) => fields[2])
-        .reverse()
-    );
+
+    // Break assignment pages by statuses
+    const assignments = dv
+      .pages(`#assignment AND -#status/done`)
+      .values.reduce((pv, p) => {
+        const status = this._tagsFilter(p.file.etags, ["#status"])[0];
+        if (!(status in pv)) pv[status] = [];
+        pv[status].push(p);
+        return pv;
+      }, {});
+
+    Object.keys(assignments)
+      .sort()
+      .forEach((status) => {
+        dv.header(2, `${this._toSentenceCase(status)} assignments`);
+        dv.table(
+          ["Assignments", "Type", "Due", "Tags", "Tasks", "Next Due"],
+          assignments[status]
+            .map((p) => [
+              p.file.link,
+              this._tagsFilter(p.file.etags, ["#isa"]),
+              nbspan(p.due),
+              this._tagsFilter(p.file.etags, ["#isa", "#status"], false, false),
+              p.file.tasks.filter((t) => !t.completed).length,
+              nbspan(this.nextTaskDate(p)),
+            ])
+            .sort((fields) => fields[2])
+            .reverse()
+        );
+        dv.el("hr", "");
+      });
   }
 
   renderJournalViewer(dv, section = "Journal") {
@@ -80,5 +95,12 @@ class dvutils {
   _tagParts(t) {
     const [base, ...rest] = t.split("/");
     return { base, rest: rest.join("/") };
+  }
+
+  _toSentenceCase(s) {
+    return s
+      .trim()
+      .toLocaleLowerCase()
+      .replace(/^(.)/, String.call.bind("".toUpperCase));
   }
 }
