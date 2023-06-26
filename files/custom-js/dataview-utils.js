@@ -54,8 +54,9 @@ class dvutils {
           .sort(sort_by_happens)
           .reverse()
           .forEach((p) => {
-            if (p.file.tasks.length) {
-              dv.taskList(p.file.tasks.where((t) => !t.completed));
+            const tasks = p.file.tasks.where((t) => !t.completed);
+            if (tasks.length) {
+              dv.taskList(tasks);
             }
           });
 
