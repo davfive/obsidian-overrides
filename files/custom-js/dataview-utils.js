@@ -28,11 +28,23 @@ class dvutils {
         return acc;
       }, {});
 
+    Object.keys(trackers)
+      .sort()
+      .map((status, index) => {
+        if (index > 0) {
+          dv.span(" | ");
+        }
+        dv.el("a", `${this._toSentenceCase(status)} Trackers`, {
+          attr: { href: `#${status}` },
+        });
+      });
+
     // Render tracker tables and tasks
     const sort_by_happens = (a, b) => b.happens - a.happens;
     Object.keys(trackers)
       .sort()
       .forEach((status) => {
+        dv.el("a", "", { attr: { name: status } });
         dv.header(2, `${this._toSentenceCase(status)} Trackers`);
 
         dv.table(
