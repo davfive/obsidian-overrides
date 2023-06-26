@@ -1,37 +1,64 @@
 class dvutils {
-  renderActiveAssignmentsViewer(dv, { active } = { active: true }) {
-    const status_query = active ? "#status/active" : "-#status/active";
+  renderActiveTrackerViewer(dv, { active } = { active: true }) {
     const nbspan = (d) =>
       dv.el("span", d, { attr: { style: "white-space: nowrap" } });
 
-    // Break assignment pages by statuses
-    const assignments = dv
-      .pages(`#assignment AND -#status/done`)
-      .values.reduce((pv, p) => {
-        const status = this._tagsFilter(p.file.etags, ["#status"])[0];
-        if (!(status in pv)) pv[status] = [];
-        pv[status].push(p);
-        return pv;
+    const isDelegated = (p) =>
+      this._tagsFilter(p.file.etags, ["#status"], true, true).includes(
+        "delegated"
+      );
+
+    // Break pages by tasks status
+    const trackers = dv
+      .pages('-"_" AND -"archive" AND -#status/done')
+      .values.reduce((acc, p) => {
+        if (!p.file.path.startsWith("trackers") && p.file.tasks.length === 0) {
+          return acc;
+        }
+
+        p.happens = this.happensDate(p);
+        const num_tasks = p.file.tasks.filter((t) => !t.completed).length;
+        let group = num_tasks > 0 ? "active" : "stale";
+        if (isDelegated(p)) {
+          group = "delegated";
+        }
+
+        if (!(group in acc)) acc[group] = [];
+        acc[group].push(p);
+        return acc;
       }, {});
 
-    Object.keys(assignments)
+    // Render tracker tables and tasks
+    const sort_by_happens = (a, b) => b.happens - a.happens;
+    Object.keys(trackers)
       .sort()
       .forEach((status) => {
-        dv.header(2, `${this._toSentenceCase(status)} assignments`);
+        dv.header(2, `${this._toSentenceCase(status)} Trackers`);
+
         dv.table(
-          ["Assignments", "Type", "Due", "Tags", "Tasks", "Next Due"],
-          assignments[status]
+          ["Tracker", "Type", "Due", "Tags", "Tasks", "Happens"],
+          trackers[status]
+            .sort(sort_by_happens)
             .map((p) => [
               p.file.link,
               this._tagsFilter(p.file.etags, ["#isa"]),
               nbspan(p.due),
               this._tagsFilter(p.file.etags, ["#isa", "#status"], false, false),
               p.file.tasks.filter((t) => !t.completed).length,
-              nbspan(this.nextTaskDate(p)),
+              nbspan(p.happens),
             ])
-            .sort((fields) => fields[2])
             .reverse()
         );
+
+        trackers[status]
+          .sort(sort_by_happens)
+          .reverse()
+          .forEach((p) => {
+            if (p.file.tasks.length) {
+              dv.taskList(p.file.tasks.where((t) => !t.completed));
+            }
+          });
+
         dv.el("hr", "");
       });
   }
@@ -48,14 +75,14 @@ class dvutils {
       .forEach((p) => this._renderSectionLinkView(dv, p, section));
   }
 
-  nextTaskDate(dvpage) {
-    let nextDate = null; // Ughh! Can't use .reduce on a generator!!!
+  happensDate(dvpage) {
+    let nextDate = dvpage.due;
     dvpage.file.tasks.forEach((task) => {
       nextDate = task.completed
         ? nextDate
-        : [dvpage.due, task.start, task.scheduled, task.due]
+        : [task.start, task.scheduled, task.due]
             .filter((d) => !!d)
-            .reduce((a, b) => (a > b ? a : b), nextDate);
+            .reduce((a, b) => (b > a ? a : b), nextDate);
     });
     return nextDate;
   }

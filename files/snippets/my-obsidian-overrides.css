@@ -9,15 +9,6 @@
    color: var(--my-color) !important;
 }
 
-/* Make the rendered tasks codeblocks look different */
-.task-extras {
-   display: block;
-   padding-left: 1.5em;
-   font-size: 1em;
-   opacity: 0.6;
-   filter: grayscale(60%);
-}
-
 /* Used with customJS and my scripts/dataview-utils.js. Removes the targeted section title. */
 .dvutils-sectionlink-rendered:not([data-embed]) {
    margin-top: 0.5em !important;
@@ -58,4 +49,9 @@ table.dataview.table-view-table tbody tr:nth-child(odd) {
 
 table.dataview.table-view-table td {
    vertical-align: top;
+}
+
+/* When multiply grouping Tasks, indent the subsequent groups */
+:where(h5, h6).tasks-group-heading {
+   padding-inline-start: var(--list-indent);
 }
