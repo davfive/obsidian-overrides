@@ -40,7 +40,15 @@ class dvutils {
       });
 
     // Render tracker tables and tasks
-    const sort_by_happens = (a, b) => b.happens - a.happens;
+    const sort_by_happens = (a, b) => {
+      // Sort oldest happens date first, with no happens dates at end
+      if (a.happens && b.happens) {
+        return b.happens - a.happens;
+      } else {
+        return a.happens ? 1 : b.happens ? -1 : 0;
+      }
+    };
+
     Object.keys(trackers)
       .sort()
       .forEach((status) => {
