@@ -3,6 +3,9 @@ class dvutils {
     const nbspan = (d) =>
       dv.el("span", d, { attr: { style: "white-space: nowrap" } });
 
+    // Don't use t.completed since have have extended todo status types
+    const taskIsActive = (t) => !["x", "-"].includes(t.status);
+
     const isDelegated = (p) =>
       this._tagsFilter(p.file.etags, ["#status"], true, true).includes(
         "delegated"
@@ -17,7 +20,7 @@ class dvutils {
         }
 
         p.happens = this.happensDate(p);
-        const num_tasks = p.file.tasks.filter((t) => !t.completed).length;
+        const num_tasks = p.file.tasks.filter(taskIsActive).length;
         let group = num_tasks > 0 ? "active" : "stale";
         if (isDelegated(p)) {
           group = "delegated";
@@ -64,7 +67,7 @@ class dvutils {
               this._tagsFilter(p.file.etags, ["#isa"]),
               nbspan(p.due),
               this._tagsFilter(p.file.etags, ["#isa", "#status"], false, false),
-              p.file.tasks.filter((t) => !t.completed).length,
+              p.file.tasks.filter(taskIsActive).length,
               nbspan(p.happens),
             ])
             .reverse()
@@ -74,7 +77,7 @@ class dvutils {
           .sort(sort_by_happens)
           .reverse()
           .forEach((p) => {
-            const tasks = p.file.tasks.where((t) => !t.completed);
+            const tasks = p.file.tasks.where(taskIsActive);
             if (tasks.length) {
               dv.taskList(tasks);
             }
