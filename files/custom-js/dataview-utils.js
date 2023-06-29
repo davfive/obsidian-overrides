@@ -31,15 +31,14 @@ class dvutils {
         return acc;
       }, {});
 
+    const trackerGroupTitle = (status) =>
+      `${this._toSentenceCase(status)} Trackers (${trackers[status].length})`;
+
     Object.keys(trackers)
       .sort()
       .map((status, index) => {
-        if (index > 0) {
-          dv.span(" | ");
-        }
-        dv.el("a", `${this._toSentenceCase(status)} Trackers`, {
-          attr: { href: `#${status}` },
-        });
+        index > 0 && dv.span(" | ");
+        dv.el("a", trackerGroupTitle(status), { attr: { href: `#${status}` } });
       });
 
     // Render tracker tables and tasks
@@ -56,7 +55,7 @@ class dvutils {
       .sort()
       .forEach((status) => {
         dv.el("a", "", { attr: { name: status } });
-        dv.header(2, `${this._toSentenceCase(status)} Trackers`);
+        dv.header(2, trackerGroupTitle(status));
 
         dv.table(
           ["Tracker", "Type", "Due", "Tags", "Tasks", "Happens"],
@@ -66,7 +65,12 @@ class dvutils {
               p.file.link,
               this._tagsFilter(p.file.etags, ["#isa"]),
               nbspan(p.due),
-              this._tagsFilter(p.file.etags, ["#isa", "#status"], false, false),
+              this._tagsFilter(
+                p.file.etags,
+                ["#isa", "#status"],
+                false,
+                false
+              ).sort(),
               p.file.tasks.filter(taskIsActive).length,
               nbspan(p.happens),
             ])
