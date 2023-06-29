@@ -1,1 +1,1 @@
-<% tp.date.now("HHMM") %> 
+<% tp.file.include("[[date-hs]]") %> 
