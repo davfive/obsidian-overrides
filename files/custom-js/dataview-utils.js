@@ -4,8 +4,6 @@ class dvutils {
       dv.el("span", d, { attr: { style: "white-space: nowrap" } });
 
     // Don't use t.completed since have have extended todo status types
-    const taskIsActive = (t) => !["x", "-"].includes(t.status);
-
     const isDelegated = (p) =>
       this._tagsFilter(p.file.etags, ["#status"], true, true).includes(
         "delegated"
@@ -20,7 +18,7 @@ class dvutils {
         }
 
         p.happens = this.happensDate(p);
-        const num_tasks = p.file.tasks.filter(taskIsActive).length;
+        const num_tasks = p.file.tasks.filter(this.taskIsActive).length;
         let group = num_tasks > 0 ? "active" : "stale";
         if (isDelegated(p)) {
           group = "delegated";
@@ -71,7 +69,7 @@ class dvutils {
                 false,
                 false
               ).sort(),
-              p.file.tasks.filter(taskIsActive).length,
+              p.file.tasks.filter(this.taskIsActive).length,
               nbspan(p.happens),
             ])
             .reverse()
@@ -81,7 +79,7 @@ class dvutils {
           .sort(sort_by_happens)
           .reverse()
           .forEach((p) => {
-            const tasks = p.file.tasks.where(taskIsActive);
+            const tasks = p.file.tasks.where(this.taskIsActive);
             if (tasks.length) {
               dv.taskList(tasks);
             }
@@ -106,13 +104,18 @@ class dvutils {
   happensDate(dvpage) {
     let nextDate = dvpage.due;
     dvpage.file.tasks.forEach((task) => {
-      nextDate = task.completed
-        ? nextDate
-        : [task.start, task.scheduled, task.due]
-            .filter((d) => !!d)
-            .reduce((a, b) => (b > a ? a : b), nextDate);
+      nextDate =
+        this.taskIsActive(task) === false
+          ? nextDate
+          : [task.start, task.scheduled, task.due]
+              .filter((d) => !!d)
+              .reduce((a, b) => (b > a ? a : b), nextDate);
     });
     return nextDate;
+  }
+
+  taskIsActive(t) {
+    return !["x", "-"].includes(t.status);
   }
 
   _renderSectionLinkView(dv, page, section, display_name_func = null) {
