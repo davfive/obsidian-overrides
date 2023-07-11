@@ -1,7 +1,7 @@
 #isa/ #status/active
 [due::]
 
-# Abstract
+# Extract
 
 
 # Deliverables

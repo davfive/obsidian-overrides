@@ -4,21 +4,28 @@ class dvutils {
       dv.el("span", d, { attr: { style: "white-space: nowrap" } });
 
     // Don't use t.completed since have have extended todo status types
+    const taskIsActive = (t) => !["x", "-"].includes(t.status);
+
     const isDelegated = (p) =>
       this._tagsFilter(p.file.etags, ["#status"], true, true).includes(
         "delegated"
       );
 
     // Break pages by tasks status
+    debugger;
     const trackers = dv
       .pages('-"_" AND -"archive" AND -#status/done')
       .values.reduce((acc, p) => {
-        if (!p.file.path.startsWith("trackers") && p.file.tasks.length === 0) {
+        const isTracker = (p) =>
+          p.file.path.startsWith("trackers") ||
+          p.file.etags.includes("#tracker");
+
+        if (!isTracker(p) && p.file.tasks.length === 0) {
           return acc;
         }
 
         p.happens = this.happensDate(p);
-        const num_tasks = p.file.tasks.filter(this.taskIsActive).length;
+        const num_tasks = p.file.tasks.filter(taskIsActive).length;
         let group = num_tasks > 0 ? "active" : "stale";
         if (isDelegated(p)) {
           group = "delegated";
@@ -69,7 +76,7 @@ class dvutils {
                 false,
                 false
               ).sort(),
-              p.file.tasks.filter(this.taskIsActive).length,
+              p.file.tasks.filter(taskIsActive).length,
               nbspan(p.happens),
             ])
             .reverse()
@@ -79,7 +86,7 @@ class dvutils {
           .sort(sort_by_happens)
           .reverse()
           .forEach((p) => {
-            const tasks = p.file.tasks.where(this.taskIsActive);
+            const tasks = p.file.tasks.where(taskIsActive);
             if (tasks.length) {
               dv.taskList(tasks);
             }
@@ -104,18 +111,13 @@ class dvutils {
   happensDate(dvpage) {
     let nextDate = dvpage.due;
     dvpage.file.tasks.forEach((task) => {
-      nextDate =
-        this.taskIsActive(task) === false
-          ? nextDate
-          : [task.start, task.scheduled, task.due]
-              .filter((d) => !!d)
-              .reduce((a, b) => (b > a ? a : b), nextDate);
+      nextDate = task.completed
+        ? nextDate
+        : [task.start, task.scheduled, task.due]
+            .filter((d) => !!d)
+            .reduce((a, b) => (b > a ? a : b), nextDate);
     });
     return nextDate;
-  }
-
-  taskIsActive(t) {
-    return !["x", "-"].includes(t.status);
   }
 
   _renderSectionLinkView(dv, page, section, display_name_func = null) {

@@ -1,7 +1,7 @@
 > assignment isa/ status/active
 > [due::]
 ---
-# Abstract
+# Extract
 
 
 ---
