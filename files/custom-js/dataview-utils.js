@@ -1,33 +1,20 @@
 class dvutils {
   renderActiveTrackerViewer(dv, { active } = { active: true }) {
-    const nbspan = (d) =>
-      dv.el("span", d, { attr: { style: "white-space: nowrap" } });
-
-    // Don't use t.completed since have have extended todo status types
-    const taskIsActive = (t) => !["x", "-"].includes(t.status);
-
-    const isDelegated = (p) =>
-      this._tagsFilter(p.file.etags, ["#status"], true, true).includes(
-        "delegated"
-      );
+    const nbspan = (text) =>
+      dv.el("span", text, { attr: { style: "white-space: nowrap" } });
 
     // Break pages by tasks status
-    debugger;
     const trackers = dv
       .pages('-"_" AND -"archive" AND -#status/done')
       .values.reduce((acc, p) => {
-        const isTracker = (p) =>
-          p.file.path.startsWith("trackers") ||
-          p.file.etags.includes("#tracker");
-
-        if (!isTracker(p) && p.file.tasks.length === 0) {
+        if (!this._pageIsTracker(p) && p.file.tasks.length === 0) {
           return acc;
         }
 
-        p.happens = this.happensDate(p);
-        const num_tasks = p.file.tasks.filter(taskIsActive).length;
+        p.happens = this._happensDate(p);
+        const num_tasks = p.file.tasks.filter(this._taskIsActive).length;
         let group = num_tasks > 0 ? "active" : "stale";
-        if (isDelegated(p)) {
+        if (this._pageIsDelegated(p)) {
           group = "delegated";
         }
 
@@ -76,7 +63,7 @@ class dvutils {
                 false,
                 false
               ).sort(),
-              p.file.tasks.filter(taskIsActive).length,
+              p.file.tasks.filter(this._taskIsActive).length,
               nbspan(p.happens),
             ])
             .reverse()
@@ -86,7 +73,7 @@ class dvutils {
           .sort(sort_by_happens)
           .reverse()
           .forEach((p) => {
-            const tasks = p.file.tasks.where(taskIsActive);
+            const tasks = p.file.tasks.where(this._taskIsActive);
             if (tasks.length) {
               dv.taskList(tasks);
             }
@@ -96,22 +83,10 @@ class dvutils {
       });
   }
 
-  renderJournalViewer(dv, section = "Journal") {
-    const pages = dv.pages("#journal");
-
-    if (pages.length === 0) {
-      return dv.paragraph("No journal pages found.");
-    }
-
-    pages.values
-      .sort((a, b) => b.file.name.localeCompare(a.file.name))
-      .forEach((p) => this._renderSectionLinkView(dv, p, section));
-  }
-
-  happensDate(dvpage) {
+  _happensDate(dvpage) {
     let nextDate = dvpage.due;
     dvpage.file.tasks.forEach((task) => {
-      nextDate = task.completed
+      nextDate = !this._taskIsActive(task)
         ? nextDate
         : [task.start, task.scheduled, task.due]
             .filter((d) => !!d)
@@ -120,25 +95,15 @@ class dvutils {
     return nextDate;
   }
 
-  _renderSectionLinkView(dv, page, section, display_name_func = null) {
-    this._renderSectionLinkHtml(dv, page, section, false, display_name_func);
-    this._renderSectionLinkHtml(dv, page, section, true, display_name_func);
+  _pageIsDelegated(p) {
+    this._tagsFilter(p.file.etags, ["#status"], true, true).includes(
+      "delegated"
+    );
   }
 
-  _renderSectionLinkHtml(dv, page, section, embed, display_name_func = null) {
-    const display_name = display_name_func ?? ((p) => p.file.name);
-    const attr = embed ? { "data-embed": true } : {};
-    // Testing Obsidian Sync
-    dv.paragraph(
-      dv.sectionLink(
-        page.file.path,
-        section,
-        embed,
-        embed
-          ? "Error: Failed to render section embed view."
-          : display_name(page)
-      ),
-      { cls: "dvutils-sectionlink-rendered", attr }
+  _pageIsTracker(p) {
+    return (
+      p.file.path.startsWith("trackers") || p.file.etags.includes("#tracker")
     );
   }
 
@@ -155,6 +120,10 @@ class dvutils {
   _tagParts(t) {
     const [base, ...rest] = t.split("/");
     return { base, rest: rest.join("/") };
+  }
+
+  _taskIsActive(t) {
+    return !["x", "-"].includes(t.status);
   }
 
   _toSentenceCase(s) {
