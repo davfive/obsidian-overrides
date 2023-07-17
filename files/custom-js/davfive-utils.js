@@ -2,11 +2,14 @@ class d5utils {
   renderActiveTrackerViewer(dv, { active } = { active: true }) {
     const trackers = this._trackerGetByGroups(dv);
     this._trackerWriteBreadcrumbs(dv, trackers);
-    Object.keys(trackers).forEach((group) => {
-      this._trackerGroupWriteTable(dv, group, trackers);
-      this._trackerGroupWriteTasks(dv, group, trackers);
-      dv.el("hr", "");
-    });
+    Object.keys(trackers)
+      .sort()
+      .forEach((group) => {
+        this._trackerGroupWriteHeader(dv, group, trackers);
+        this._trackerGroupWriteTable(dv, group, trackers);
+        this._trackerGroupWriteTasks(dv, group, trackers);
+        dv.el("hr", "");
+      });
   }
 
   _nbspan(dv, text) {
@@ -29,7 +32,7 @@ class d5utils {
         return a.happens ? 1 : b.happens ? -1 : 0;
       }
     };
-
+    debugger;
     return dv
       .pages('-"_" AND -"archive" AND -#status/done')
       .values.filter((p) => {
@@ -41,7 +44,11 @@ class d5utils {
       })
       .sort(sort_by_happens)
       .reduce((bygroup, p) => {
-        const group = d5utils.page.numActiveTasks(p) > 0 ? "active" : "stale";
+        const group = d5utils.page.isDelegated(p)
+          ? "delegated"
+          : d5utils.page.numActiveTasks(p)
+          ? "active"
+          : "stale";
         !(group in bygroup) && (bygroup[group] = []);
         bygroup[group].push(p);
         return bygroup;
@@ -113,9 +120,7 @@ class d5utils {
       return nextDate;
     },
     isDelegated: (p) =>
-      d5utils.page
-        .tagsFilter(p.file.etags, ["#status"], true, true)
-        .includes("delegated"),
+      d5utils.page.tagsFilter(p, ["#status"], true, true).includes("delegated"),
     isTracker: (p) =>
       p.file.path.startsWith("trackers") || p.file.etags.includes("#tracker"),
     numActiveTasks: (p) => d5utils.page.activeTasks(p).length,
