@@ -24,15 +24,18 @@ class d5utils {
   }
 
   _trackerGetByGroups(dv) {
-    const sort_by_happens = (a, b) => {
+    const sort_by_date_reverse = (a, b) => {
       // Sort oldest happens date first, with no happens dates at end
-      if (a.happens && b.happens) {
-        return b.happens - a.happens;
+      if (a && b) {
+        return b - a;
       } else {
-        return a.happens ? 1 : b.happens ? -1 : 0;
+        return a ? 1 : b ? -1 : 0;
       }
     };
-    debugger;
+    const sort_by_pagedue = (a, b) => sort_by_date_reverse(a.due, b.due);
+    const sort_by_happens = (a, b) =>
+      sort_by_date_reverse(a.happens, b.happens);
+
     return dv
       .pages('-"_" AND -"archive" AND -#status/done')
       .values.filter((p) => {
@@ -42,6 +45,7 @@ class d5utils {
         }
         return false;
       })
+      .sort(sort_by_pagedue)
       .sort(sort_by_happens)
       .reduce((bygroup, p) => {
         const group = d5utils.page.isDelegated(p)
@@ -109,7 +113,7 @@ class d5utils {
   static page = {
     activeTasks: (p) => p.file.tasks.where(d5utils.task.isActive),
     happensDate: (dvpage) => {
-      let nextDate = dvpage.due;
+      let nextDate = undefined; // dvpage.due; // Don't use page due anymore for task happens
       dvpage.file.tasks.forEach((task) => {
         nextDate = !d5utils.task.isActive(task)
           ? nextDate
