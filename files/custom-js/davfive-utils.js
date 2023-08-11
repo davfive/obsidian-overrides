@@ -1,12 +1,16 @@
 class d5utils {
-  renderActiveTrackerViewer(dv, { active } = { active: true }) {
+  renderActiveTrackerViewer(
+    dv,
+    { active, hideCols } = { active: true, hideCols: [] }
+  ) {
+    hideCols = Array.isArray(hideCols) ? hideCols : [];
     const trackers = this._trackerGetByGroups(dv);
     this._trackerWriteBreadcrumbs(dv, trackers);
     Object.keys(trackers)
       .sort()
       .forEach((group) => {
         this._trackerGroupWriteHeader(dv, group, trackers);
-        this._trackerGroupWriteTable(dv, group, trackers);
+        this._trackerGroupWriteTable(dv, group, hideCols, trackers);
         this._trackerGroupWriteTasks(dv, group, trackers);
         dv.el("hr", "");
       });
@@ -81,18 +85,26 @@ class d5utils {
     dv.header(2, this._trackerGroupTitle(group, trackers));
   }
 
-  _trackerGroupWriteTable(dv, group, trackers) {
+  _trackerGroupWriteTable(dv, group, hideCols, trackers) {
+    debugger;
+    const tagsFilterList = ["#status"];
+    const cols = {
+      Tracker: (p) => p.file.link,
+      Type: (p) => d5utils.page.tagsFilter(p, ["#isa"]),
+      Due: (p) => this._nbspan(dv, p.due),
+      Tags: (p) =>
+        d5utils.page.tagsFilter(p, tagsFilterList, false, false).sort(),
+      Happens: (p) => this._nbspan(dv, p.happens),
+    };
+    hideCols.filter((c) => c in cols).forEach((c) => delete cols[c]);
+    if ("Type" in cols) {
+      // Hide type tag if Type column exists
+      tagsFilterList.append("#isa");
+    }
     dv.table(
-      ["Tracker", "Type", "Due", "Tags", "Tasks", "Happens"],
+      Object.keys(cols),
       trackers[group]
-        .map((p) => [
-          p.file.link,
-          d5utils.page.tagsFilter(p, ["#isa"]),
-          this._nbspan(dv, p.due),
-          d5utils.page.tagsFilter(p, ["#isa", "#status"], false, false).sort(),
-          d5utils.page.numActiveTasks(p),
-          this._nbspan(dv, p.happens),
-        ])
+        .map((p) => Object.values(cols).map((valfn) => valfn(p)))
         .reverse()
     );
   }
